@@ -8,12 +8,12 @@ interface OAuthState {
   codeVerifier: string;
 }
 
-export async function handleOAuth(request: Request, env: Env): Promise<Response | null> {
+export async function handleOAuth(request: Request, env: Env, scope = "user:email"): Promise<Response | null> {
   const url = new URL(request.url);
   const path = url.pathname;
 
   if (path === '/login') {
-    return handleLogin(request, env);
+    return handleLogin(request, env, scope);
   }
   
   if (path === '/callback') {
@@ -27,7 +27,7 @@ export async function handleOAuth(request: Request, env: Env): Promise<Response 
   return null; // Not an OAuth route, let other handlers take over
 }
 
-async function handleLogin(request: Request, env: Env): Promise<Response> {
+async function handleLogin(request: Request, env: Env, scope:string): Promise<Response> {
   const url = new URL(request.url);
   const redirectTo = url.searchParams.get('redirect_to') || '/';
   
@@ -47,7 +47,7 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
   const githubUrl = new URL('https://github.com/login/oauth/authorize');
   githubUrl.searchParams.set('client_id', env.GITHUB_CLIENT_ID);
   githubUrl.searchParams.set('redirect_uri', `${url.origin}/callback`);
-  githubUrl.searchParams.set('scope', 'user:email');
+  githubUrl.searchParams.set('scope', scope);
   githubUrl.searchParams.set('state', stateString);
   githubUrl.searchParams.set('code_challenge', codeChallenge);
   githubUrl.searchParams.set('code_challenge_method', 'S256');
