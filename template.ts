@@ -1,4 +1,4 @@
-// this package can either be copied or installed via 'npm i simpleauth-github
+// this package can either be copied or installed via 'npm i smootherauth-github'
 import { handleOAuth, getCurrentUser, type Env } from './oauth-middleware';
 
 export default {
