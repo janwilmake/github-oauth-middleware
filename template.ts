@@ -1,3 +1,4 @@
+// this package can either be copied or installed via 'npm i simpleauth-github
 import { handleOAuth, getCurrentUser, type Env } from './oauth-middleware';
 
 export default {
