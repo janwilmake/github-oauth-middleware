@@ -3,7 +3,7 @@ import { handleOAuth, getCurrentUser, type Env } from './oauth-middleware';
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     // Handle OAuth routes first
-    const oauthResponse = await handleOAuth(request, env);
+    const oauthResponse = await handleOAuth(request, env, "user:email");
     if (oauthResponse) {
       return oauthResponse;
     }
