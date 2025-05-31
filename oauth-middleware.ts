@@ -52,11 +52,8 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
   githubUrl.searchParams.set('code_challenge', codeChallenge);
   githubUrl.searchParams.set('code_challenge_method', 'S256');
   
-  // Set state cookie and redirect
-  const response = Response.redirect(githubUrl.toString(), 302);
-  response.headers.set('Set-Cookie', `oauth_state=${stateString}; HttpOnly; Secure; SameSite=Lax; Max-Age=600; Path=/`);
   
-  return response;
+  return new Response(null,{status:302,headers:{Location:githubUrl.toString(),"Set-Cookie":`oauth_state=${encodeURIComponent(stateString)}; HttpOnly; Secure; SameSite=Lax; Max-Age=600; Path=/`}})
 }
 
 async function handleCallback(request: Request, env: Env): Promise<Response> {
@@ -71,7 +68,7 @@ async function handleCallback(request: Request, env: Env): Promise<Response> {
   // Get state from cookie
   const cookies = parseCookies(request.headers.get('Cookie') || '');
   const stateCookie = cookies.oauth_state;
-  
+  console.log({stateCookie,stateParam})
   if (!stateCookie || stateCookie !== stateParam) {
     return new Response('Invalid state parameter', { status: 400 });
   }
@@ -131,23 +128,19 @@ async function handleCallback(request: Request, env: Env): Promise<Response> {
   const sessionToken = btoa(JSON.stringify(sessionData));
   
   // Redirect to original destination
-  const response = Response.redirect(state.redirectTo || '/', 302);
+  const headers = new Headers({Location:state.redirectTo||'/'})
   
   // Clear oauth state cookie and set session cookie
-  response.headers.append('Set-Cookie', 'oauth_state=; HttpOnly; Secure; SameSite=Lax; Max-Age=0; Path=/');
-  response.headers.append('Set-Cookie', `session=${sessionToken}; HttpOnly; Secure; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}; Path=/`);
+  headers.append('Set-Cookie', 'oauth_state=; HttpOnly; Secure; SameSite=Lax; Max-Age=0; Path=/');
+  headers.append('Set-Cookie', `session=${sessionToken}; HttpOnly; Secure; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}; Path=/`);
   
-  return response;
+  return new Response(null,{status:302,headers});
 }
 
 async function handleLogout(request: Request): Promise<Response> {
   const url = new URL(request.url);
-  const redirectTo = url.searchParams.get('redirect_to') || '/';
-  
-  const response = Response.redirect(redirectTo, 302);
-  response.headers.set('Set-Cookie', 'session=; HttpOnly; Secure; SameSite=Lax; Max-Age=0; Path=/');
-  
-  return response;
+  const redirectTo = url.searchParams.get('redirect_to') || '/';  
+  return new Response(null,{status:302,headers:{Location:redirectTo,"Set-Cookie":'session=; HttpOnly; Secure; SameSite=Lax; Max-Age=0; Path=/'}});
 }
 
 // Helper function to get current user from session
