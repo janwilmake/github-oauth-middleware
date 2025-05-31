@@ -14,7 +14,7 @@ export default {
     if (url.pathname === '/protected') {
       const user = getCurrentUser(request);
       if (!user) {
-        return Response.redirect('/login?redirect_to=' + encodeURIComponent(url.pathname), 302);
+        return new Response(null, {status:302,headers:{Location:'/login?redirect_to=' + encodeURIComponent(url.pathname)}});
       }
       
       return new Response(`Hello ${user.login}! You are authenticated.`, {
